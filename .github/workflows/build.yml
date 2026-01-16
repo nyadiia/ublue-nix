@@ -51,6 +51,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
+      - name: Restore MOK private key from secret
+        run: |
+          mkdir -p certs
+          echo "${{ secrets.MOK_PRIVATE_KEY }}" > certs/akmods_ublue-nix.priv
+
       # You only use this action if the container-storage-action proves to be unreliable, you don't need to enable both
       # This is optional, but if you see that your builds are way too big for the runners, you can enable this by uncommenting the following lines:
       - name: Maximize build space
@@ -79,7 +84,7 @@ jobs:
           # E.G: 2022-02-08T15:38:15Z'
           # https://artifacthub.io/docs/topics/repositories/container-images/
           # https://linux.die.net/man/1/date
-          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
+          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> "$GITHUB_OUTPUT"
 
       # Image metadata for https://artifacthub.io/ - This is optional but is highly recommended so we all can get a index of all the custom images
       # The metadata by itself is not going to do anything, you choose if you want your image to be on ArtifactHub or not.
@@ -164,8 +169,8 @@ jobs:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
         run: |
           set -x
-          echo "registry=${IMAGE_REGISTRY,,}" >> $GITHUB_OUTPUT
-          echo "image=${IMAGE_NAME,,}" >> $GITHUB_OUTPUT
+          echo "registry=${IMAGE_REGISTRY,,}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
 
       # These `if` statements are so that pull requests for your custom images do not make it publish any packages under your name without you knowing
       # They also check if the runner is on the default branch so that things like the merge queue (if you enable it), are going to work
@@ -213,7 +218,7 @@ jobs:
         run: |
           IMAGE_FULL="${LOWERCASE_REGISTRY}/${LOWERCASE_IMAGE}"
           for tag in ${TAGS_TO_SIGN}; do
-            cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_FULL:$tag
+            cosign sign -y --key env://COSIGN_PRIVATE_KEY "${IMAGE_FULL}:${tag}"
           done
 
   check:
@@ -227,9 +232,9 @@ jobs:
           JOBS: ${{ toJson(needs) }}
         run: |
           echo "Job status:"
-          echo $JOBS | jq -r 'to_entries[] | " - \(.key): \(.value.result)"'
+          echo "$JOBS" | jq -r 'to_entries[] | " - \(.key): \(.value.result)"'
 
-          for i in $(echo $JOBS | jq -r 'to_entries[] | .value.result'); do
+          for i in $(echo "$JOBS" | jq -r 'to_entries[] | .value.result'); do
             if [ "$i" != "success" ] && [ "$i" != "skipped" ]; then
               echo ""
               echo "Status check not okay!"

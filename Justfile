@@ -86,10 +86,12 @@ sudoif command *args:
 #
 
 # Build the image using the specified parameters
-build $target_image=image_name $tag=default_tag:
+build $target_image=image_name $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable":
     #!/usr/bin/env bash
 
     BUILD_ARGS=()
+    BUILD_ARGS+=("--build-arg" "BASE_IMAGE={{ base_image }}")
+    BUILD_ARGS+=("--build-arg" "IMAGE_NAME={{ target_image }}")
     if [[ -z "$(git status -s)" ]]; then
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
@@ -195,31 +197,31 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
 #   config: The configuration file to use for the build (deafult: disk_config/disk.toml)
 
 # Example: just _rebuild-bib localhost/fedora latest qcow2 disk_config/disk.toml
-_rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)
+_rebuild-bib $target_image $tag $type $config $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": (build target_image tag base_image) && (_build-bib target_image tag type config)
 
 # Build a QCOW2 virtual machine image
 [group('Build Virtal Machine Image')]
-build-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "qcow2" "disk_config/disk.toml")
+build-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": (build target_image tag base_image) && (_build-bib target_image tag "qcow2" "disk_config/disk.toml")
 
 # Build a RAW virtual machine image
 [group('Build Virtal Machine Image')]
-build-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "raw" "disk_config/disk.toml")
+build-raw $target_image=("localhost/" + image_name) $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": (build target_image tag base_image) && (_build-bib target_image tag "raw" "disk_config/disk.toml")
 
 # Build an ISO virtual machine image
 [group('Build Virtal Machine Image')]
-build-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "iso" "disk_config/iso.toml")
+build-iso $target_image=("localhost/" + image_name) $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": (build target_image tag base_image) && (_build-bib target_image tag "iso" "disk_config/iso.toml")
 
 # Rebuild a QCOW2 virtual machine image
 [group('Build Virtal Machine Image')]
-rebuild-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "qcow2" "disk_config/disk.toml")
+rebuild-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": && (_rebuild-bib target_image tag "qcow2" "disk_config/disk.toml" base_image)
 
 # Rebuild a RAW virtual machine image
 [group('Build Virtal Machine Image')]
-rebuild-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "raw" "disk_config/disk.toml")
+rebuild-raw $target_image=("localhost/" + image_name) $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": && (_rebuild-bib target_image tag "raw" "disk_config/disk.toml" base_image)
 
 # Rebuild an ISO virtual machine image
 [group('Build Virtal Machine Image')]
-rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "iso" "disk_config/iso.toml")
+rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag $base_image="ghcr.io/ublue-os/bazzite-dx-nvidia:stable": && (_rebuild-bib target_image tag "iso" "disk_config/iso.toml" base_image)
 
 # Run a virtual machine with the specified image type and configuration
 _run-vm $target_image $tag $type $config:

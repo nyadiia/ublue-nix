@@ -2,8 +2,8 @@
 
 set -ouex pipefail
 
-echo "Adding Terra repository..."
-dnf install -y --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release
+echo "Enabling Terra repository..."
+dnf5 config-manager setopt terra.enabled=1
 
 echo "Installing core CLI tools..."
 dnf5 install -y \

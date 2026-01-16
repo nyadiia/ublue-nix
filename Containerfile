@@ -1,4 +1,4 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=ghcr.io/ublue-os/bazzite-dx-nvidia:stable
 
 # Stage 1: Builder - Build it87-extras kernel module
 FROM ${BASE_IMAGE} AS builder

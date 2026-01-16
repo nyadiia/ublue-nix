@@ -4,3 +4,4 @@ output
 _build-*/**
 .env
 .mcp.json
+.serena/

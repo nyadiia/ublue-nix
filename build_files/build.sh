@@ -2,23 +2,35 @@
 
 set -ouex pipefail
 
-### Install packages
+echo "Adding Terra repository..."
+dnf install -y --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
+echo "Installing core CLI tools..."
+dnf5 install -y \
+  ripgrep \
+  fd-find \
+  bat \
+  htop \
+  gh \
+  zip \
+  unzip \
+  direnv \
+  zoxide \
+  || true
 
-# this installs a package from fedora repos
-dnf5 install -y tmux 
+echo "Attempting to install optional tools..."
+dnf5 install -y \
+  git-delta \
+  tealdeer \
+  dua-cli \
+  2>/dev/null || echo "Some optional packages not available, skipping..."
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
-
-#### Example for enabling a System Unit File
+echo "Installing tools from Terra repository..."
+dnf5 install -y \
+  eza \
+  yazi \
+  || true
 
 systemctl enable podman.socket
+
+echo "CLI tools installation complete"

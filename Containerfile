@@ -1,40 +1,51 @@
-# Allow build scripts to be referenced without being copied into the final image
+ARG BASE_IMAGE
+
+# Stage 1: Builder - Build it87-extras kernel module
+FROM ${BASE_IMAGE} AS builder
+
+# Copy MOK keys for module signing
+COPY certs/akmods_ublue-nix.priv /tmp/certs/private_key.priv
+COPY certs/akmods_ublue-nix.der /tmp/certs/public_key.der
+
+# Install keys to expected location
+RUN install -Dm644 /tmp/certs/public_key.der /etc/pki/akmods/certs/public_key.der && \
+    install -Dm644 /tmp/certs/private_key.priv /etc/pki/akmods/private/private_key.priv
+
+# Copy and run it87 build script
+COPY build_files/build-it87.sh /tmp/build-it87.sh
+RUN /tmp/build-it87.sh
+
+# Stage 2: Final Image
 FROM scratch AS ctx
 COPY build_files /
 
-# Base Image
-FROM ghcr.io/grandpares/bazzite-nvidia-open-it87:latest
+FROM ${BASE_IMAGE}
 
-## Other possible base images include:
-# FROM ghcr.io/ublue-os/bazzite:latest
-# FROM ghcr.io/ublue-os/bluefin-nvidia:stable
-# 
-# ... and so on, here are more base images
-# Universal Blue Images: https://github.com/orgs/ublue-os/packages
-# Fedora base image: quay.io/fedora/fedora-bootc:41
-# CentOS base images: quay.io/centos-bootc/centos-bootc:stream10
+ARG IMAGE_NAME="${IMAGE_NAME:-ublue-nix}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR:-nyadiia}"
 
-### [IM]MUTABLE /opt
-## Some bootable images, like Fedora, have /opt symlinked to /var/opt, in order to
-## make it mutable/writable for users. However, some packages write files to this directory,
-## thus its contents might be wiped out when bootc deploys an image, making it troublesome for
-## some packages. Eg, google-chrome, docker-desktop.
-##
-## Uncomment the following line if one desires to make /opt immutable and be able to be used
-## by the package manager.
+## Base image uses bazzite-dx variants for developer features
+## This includes development tools, containers setup, and optional nvidia drivers
 
-# RUN rm /opt && mkdir /opt
+### INSTALL IT87-EXTRAS MODULE
+# Copy built module from builder stage
+COPY --from=builder /it87-extras.ko.xz /tmp/it87-extras.ko.xz
+COPY certs/akmods_ublue-nix.der /tmp/certs/public_key.der
 
-### MODIFICATIONS
-## make modifications desired in your image and install packages by modifying the build.sh script
-## the following RUN directive does all the things required to run "build.sh" as recommended.
+# Install module and configure autoload
+COPY build_files/install-it87.sh /tmp/install-it87.sh
+RUN /tmp/install-it87.sh
 
+### INSTALL CLI TOOLS AND SETUP
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build.sh
-    
+
+### CREATE NIX DIRECTORY
+# Optional: for users who want to install nix later
+RUN mkdir -p /nix
+
 ### LINTING
-## Verify final image and contents are correct.
 RUN bootc container lint

@@ -120,6 +120,114 @@ sudo bootc switch ghcr.io/<username>/<image_name>
 ```
 This should queue your image for the next reboot, which you can do immediately after the command finishes. You have officially set up your custom image! See the following section for an explanation of the important parts of the template for customization.
 
+# it87-extras Hardware Monitoring
+
+this image includes the it87-extras kernel module for hardware monitoring and fan control on gigabyte motherboards with ITE super i/o chips (IT8686E, IT8628E, IT8620E, etc.).
+
+## MOK Key Enrollment (Required for Secure Boot)
+
+after switching to this image, you must enroll the MOK (machine owner key) to allow the it87-extras module to load with secure boot enabled:
+
+```bash
+# import the public key
+sudo mokutil --import /etc/pki/akmods/certs/akmods_ublue-nix.der
+
+# enter a password when prompted (you'll need to remember this)
+# reboot your system
+```
+
+during boot, the MOK manager will appear:
+1. select "enroll MOK"
+2. select "continue"
+3. select "yes"
+4. enter the password you chose
+5. reboot
+
+## BIOS Configuration
+
+**important:** for fan control to work properly, you must set fan control in your BIOS to 0% or disabled. if BIOS fan control is enabled, it will conflict with software fan control and prevent it87-extras from working.
+
+## Verifying it87-extras
+
+after rebooting and enrolling the MOK key:
+
+```bash
+# check module is loaded
+lsmod | grep it87_extras
+
+# check sensors are detected
+sensors
+
+# example output:
+# it8628-isa-0a40
+# Adapter: ISA adapter
+# fan1:        1205 RPM  (min =    0 RPM)
+# fan2:           0 RPM  (min =    0 RPM)
+# fan3:        1018 RPM  (min =    0 RPM)
+```
+
+you can use tools like `fancontrol` or CoolerControl to manage your fans.
+
+## Hardware Compatibility
+
+works with gigabyte motherboards featuring ITE super i/o chips:
+- x670e aorus master
+- b550 chipset boards
+- many other gigabyte models with IT86xx series chips
+
+# Included CLI Tools
+
+this image is based on bazzite-dx-nvidia and includes comprehensive command-line tools:
+
+## pre-installed in base image:
+- btop - system monitor
+- fzf - fuzzy finder
+- git - version control
+- mtr - network diagnostics
+- tmux - terminal multiplexer
+- wireguard-tools - vpn tools
+- clang - c/c++ compiler
+- curl - http client
+- python3 - python runtime
+- rustup - rust toolchain
+- wget - file downloader
+
+## added by this image:
+- ripgrep (rg) - fast text search
+- fd - fast file finder
+- bat - cat with syntax highlighting
+- htop - process monitor
+- gh - github cli
+- zip/unzip - compression tools
+- direnv - environment switcher
+- eza - modern ls replacement
+- zoxide - smart cd
+- yazi - terminal file manager
+- git-delta (if available) - git diff viewer
+- tealdeer (if available) - simplified man pages
+- dua-cli (if available) - disk usage analyzer
+
+# Optional: Nix Package Manager
+
+this image includes a `/nix` directory for users who want to use nix for additional packages. to install nix:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | \
+  sh -s -- install ostree --no-confirm
+```
+
+then you can install packages:
+
+```bash
+# install individual packages
+nix profile install nixpkgs#helix nixpkgs#neovim
+
+# or install many at once
+nix profile install nixpkgs#helix nixpkgs#starship nixpkgs#atuin
+```
+
+nix is completely optional - the image already includes comprehensive tooling via fedora and terra repositories.
+
 # Repository Contents
 
 ## Containerfile

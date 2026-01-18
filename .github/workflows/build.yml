@@ -75,7 +75,7 @@ jobs:
       - name: Generate output image name
         id: gen_image_ref
         run: |
-          echo "IMAGE_NAME=${BASE_IMAGE/bazzite-dx/ublue-nix}" | tee -a "$GITHUB_ENV"
+          echo "IMAGE_NAME=${BASE_IMAGE}-nix" | tee -a "$GITHUB_ENV"
 
       - name: Get current date
         id: date

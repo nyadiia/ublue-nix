@@ -13,19 +13,11 @@ echo "Enabling Terra repository..."
 dnf5 config-manager setopt terra.enabled=1
 
 echo "Installing CLI tools..."
-dnf5 install -y \
-  https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-  https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm || true
-
-
-dnf5 install -y \
+dnf5 install -y --skip-unavailable --skip-broken \
   ripgrep \
   fd-find \
   bat \
-  htop \
   gh \
-  zip \
-  unzip \
   direnv \
   zoxide \
   git-delta \
@@ -33,9 +25,7 @@ dnf5 install -y \
   dua-cli \
   neovim \
   eza \
-  yazi \
-  resvg \
-  wl-clipboard
+  yazi
 
 systemctl enable podman.socket
 

@@ -1,0 +1,4 @@
+[manager]
+prepend_keymap = []
+append_keymap = []
+show_hidden = true

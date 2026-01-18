@@ -43,6 +43,13 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build.sh
 
+### COPY CONFIG FILES FOR NEW USERS
+COPY --from=ctx /config/.gitconfig /etc/skel/.gitconfig
+COPY --from=ctx /config/yazi.toml /etc/skel/.config/yazi/config/yazi.toml
+COPY --from=ctx /config/bash-config.sh /etc/skel/.bashrc
+COPY --from=ctx /config/zsh-config.sh /etc/skel/.zshrc
+COPY --from=ctx /config/interactive-shell.sh /etc/profile.d/interactive-shell.sh
+
 ### CREATE NIX DIRECTORY
 # Optional: for users who want to install nix later
 RUN mkdir -p /nix

@@ -5,7 +5,7 @@ set -ouex pipefail
 echo "Enabling Terra repository..."
 dnf5 config-manager setopt terra.enabled=1
 
-echo "Installing core CLI tools..."
+echo "Installing CLI tools..."
 dnf5 install -y \
   ripgrep \
   fd-find \
@@ -16,20 +16,12 @@ dnf5 install -y \
   unzip \
   direnv \
   zoxide \
-  || true
-
-echo "Attempting to install optional tools..."
-dnf5 install -y \
   git-delta \
   tealdeer \
   dua-cli \
-  2>/dev/null || echo "Some optional packages not available, skipping..."
-
-echo "Installing tools from Terra repository..."
-dnf5 install -y \
+  neovim \
   eza \
-  yazi \
-  || true
+  yazi
 
 systemctl enable podman.socket
 

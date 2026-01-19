@@ -53,9 +53,5 @@ COPY --from=ctx /config/zsh-config.sh /etc/skel/.zshrc
 # Optional: for users who want to install nix later
 RUN mkdir -p /nix
 
-### CREATE OPT DIRECTORY FOR 1PASSWORD
-# Pre-create directory to prevent RPM cpio hardlink failures
-RUN mkdir -p /opt/1Password
-
 ### LINTING
 RUN bootc container lint

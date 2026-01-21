@@ -24,6 +24,9 @@ dnf5 install -y --skip-unavailable --skip-broken \
   dua-cli \
   neovim \
   eza \
-  yazi
+  yazi \
+  zed \
+  coolercontrol \
+  liquidctl
 
 systemctl enable podman.socket

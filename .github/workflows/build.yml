@@ -38,7 +38,7 @@ jobs:
           - bazzite-dx-nvidia-gnome
           - bazzite-dx-nvidia
           - aurora-dx
-          - aurora-dx-nvidia
+          - aurora-dx-nvidia-open
 
     env:
       BASE_IMAGE: ${{ matrix.base_image }}

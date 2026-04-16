@@ -28,6 +28,7 @@ dnf5 install -y --skip-unavailable --skip-broken \
   zed \
   coolercontrol \
   liquidctl \
-  ghostty
+  ghostty \
+  podman-compose
 
 systemctl enable podman.socket

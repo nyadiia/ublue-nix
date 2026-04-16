@@ -29,6 +29,9 @@ dnf5 install -y --skip-unavailable --skip-broken \
   coolercontrol \
   liquidctl \
   ghostty \
-  podman-compose
+  podman-compose \
+  @c-development \
+  @development-tools \
+  cmake
 
 systemctl enable podman.socket

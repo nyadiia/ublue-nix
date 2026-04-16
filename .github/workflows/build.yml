@@ -93,10 +93,14 @@ jobs:
         run: |
           OWNER="${{ github.repository_owner }}"
           CACHE_IMAGE="ghcr.io/${OWNER,,}/build-cache:${{ matrix.base_image }}"
-          echo "image=${CACHE_IMAGE}" >> "$GITHUB_OUTPUT"
-          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
-            echo "cache_to_arg=--cache-to=${CACHE_IMAGE}" >> "$GITHUB_OUTPUT"
-          fi
+          {
+            echo "extra_args<<EOF"
+            echo "--cache-from=${CACHE_IMAGE}"
+            if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+              echo "--cache-to=${CACHE_IMAGE}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       # Image metadata for https://artifacthub.io/ - This is optional but is highly recommended so we all can get a index of all the custom images
       # The metadata by itself is not going to do anything, you choose if you want your image to be on ArtifactHub or not.
@@ -150,14 +154,12 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           oci: false
+          layers: true
           build-args: |
             BASE_IMAGE=ghcr.io/ublue-os/${{ matrix.base_image }}:stable
             IMAGE_NAME=${{ env.IMAGE_NAME }}
             IMAGE_VENDOR=${{ github.repository_owner }}
-          extra-args: |
-            --layers
-            --cache-from=${{ steps.cache.outputs.image }}
-            ${{ steps.cache.outputs.cache_to_arg }}
+          extra-args: ${{ steps.cache.outputs.extra_args }}
 
       # Rechunk is a script that we use on Universal Blue to make sure there isnt a single huge layer when your image gets published.
       # This does not make your image faster to download, just provides better resumability and fixes a few errors.
